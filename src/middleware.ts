@@ -3,40 +3,41 @@ import type { NextRequest } from 'next/server';
 
 export const config = {
   matcher: [
-    // Hanya jalankan middleware di halaman utama (bukan di api, static, dll)
-    '/((?!api|_next/static|_next/image|uploads|favicon.ico|login|dashboard|admin).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - uploads (uploaded files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|uploads|favicon.ico).*)',
   ],
 };
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get('host') || '';
-  const pathname = url.pathname;
 
-  // Jangan proses path sistem
-  const systemPaths = ['/login', '/dashboard', '/admin', '/api'];
-  if (systemPaths.some(path => pathname.startsWith(path))) {
+  // Determine if we are on a "main" domain or a tenant subdomain
+  // In Vercel, the main domain is usually something.vercel.app
+  const isVercel = hostname.includes('.vercel.app');
+  const isLocalhost = hostname.includes('localhost') || hostname.includes('127.0.0.1');
+
+  // If it's a direct path access on a main domain (e.g. apps.vercel.app/cafedemo/menu)
+  // we let Next.js handle it via the [tenant] dynamic route naturally.
+  if (isVercel || isLocalhost) {
     return NextResponse.next();
   }
 
-  // Semua domain vercel.app dianggap domain utama
-  // Semua akses localhost juga dianggap domain utama
-  const isMainDomain =
-    hostname.includes('vercel.app') ||
-    hostname.includes('localhost') ||
-    hostname.includes('127.0.0.1');
-
-  if (isMainDomain) {
-    // Ini sudah benar - Next.js akan handle routing via [tenant] folder
-    return NextResponse.next();
-  }
-
-  // Jika pakai custom domain dengan subdomain (namacafe.yourdomain.com)
+  // If we ever support custom domains (e.g. namacafe.com)
+  // we would handle the rewrite here.
   const rootDomain = process.env.ROOT_DOMAIN || 'localhost:3000';
   const currentHost = hostname.replace(`.${rootDomain}`, '');
 
-  // Rewrite ke halaman tenant
-  return NextResponse.rewrite(
-    new URL(`/${currentHost}${pathname}${url.search}`, req.url)
-  );
+  if (currentHost !== hostname) {
+    return NextResponse.rewrite(new URL(`/${currentHost}${url.pathname}${url.search}`, req.url));
+  }
+
+  return NextResponse.next();
 }

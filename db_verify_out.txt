@@ -1,0 +1,6 @@
+--- DEBUG INFO ---
+USERS COUNT: 2
+ - superadmin@qrcafe.app (SUPERADMIN)
+ - admin@cafedemo.app (RESTAURANT_ADMIN)
+RESTAURANTS COUNT: 1
+ - cafedemo (Cafe Demo Modern)

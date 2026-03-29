@@ -34,16 +34,20 @@ export default async function TenantMenuPage({
   // Validate table if provided
   let validTable = false;
   if (resolvedSearchParams.table) {
-    const table = await prisma.table.findUnique({
-      where: {
-        restaurantId_number: {
-          restaurantId: restaurant.id,
-          number: resolvedSearchParams.table
+    try {
+      const table = await prisma.table.findUnique({
+        where: {
+          restaurantId_number: {
+            restaurantId: restaurant.id,
+            number: resolvedSearchParams.table
+          }
         }
+      });
+      if (table && table.isActive) {
+        validTable = true;
       }
-    });
-    if (table && table.isActive) {
-      validTable = true;
+    } catch (err) {
+      console.error('Table lookup error:', err);
     }
   }
 
