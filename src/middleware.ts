@@ -3,36 +3,40 @@ import type { NextRequest } from 'next/server';
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|uploads|favicon.ico).*)',
+    // Hanya jalankan middleware di halaman utama (bukan di api, static, dll)
+    '/((?!api|_next/static|_next/image|uploads|favicon.ico|login|dashboard|admin).*)',
   ],
 };
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get('host') || '';
+  const pathname = url.pathname;
 
-  // Main app domains - semua ini dianggap sebagai domain utama (bukan subdomain tenant)
-  const mainDomains = [
-    'localhost',
-    'localhost:3000',
-    'qr-order-mpos.vercel.app',
-    'qr-order-mpos-git-main-yudhisapple-8276s-projects.vercel.app',
-  ];
-
-  // Cek apakah ini adalah domain utama (bukan subdomain tenant)
-  const isMainDomain = mainDomains.some(domain => hostname === domain || hostname.endsWith('.vercel.app'));
-
-  if (isMainDomain) {
-    // Ini adalah domain utama, route normal
+  // Jangan proses path sistem
+  const systemPaths = ['/login', '/dashboard', '/admin', '/api'];
+  if (systemPaths.some(path => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
-  // Jika ini adalah subdomain khusus tenant (namacafe.yourdomain.com)
-  // Ambil bagian subdomain saja
+  // Semua domain vercel.app dianggap domain utama
+  // Semua akses localhost juga dianggap domain utama
+  const isMainDomain =
+    hostname.includes('vercel.app') ||
+    hostname.includes('localhost') ||
+    hostname.includes('127.0.0.1');
+
+  if (isMainDomain) {
+    // Ini sudah benar - Next.js akan handle routing via [tenant] folder
+    return NextResponse.next();
+  }
+
+  // Jika pakai custom domain dengan subdomain (namacafe.yourdomain.com)
   const rootDomain = process.env.ROOT_DOMAIN || 'localhost:3000';
   const currentHost = hostname.replace(`.${rootDomain}`, '');
 
   // Rewrite ke halaman tenant
-  return NextResponse.rewrite(new URL(`/${currentHost}${url.pathname}${url.search}`, req.url));
+  return NextResponse.rewrite(
+    new URL(`/${currentHost}${pathname}${url.search}`, req.url)
+  );
 }
-
