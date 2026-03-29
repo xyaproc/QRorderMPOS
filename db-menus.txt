@@ -1,0 +1,10 @@
+TOTAL: 9
+[Sate Taichan Sarjana] [Coffee] Espresso (Available: true)
+[Sate Taichan Sarjana] [Coffee] Sate Taichan (Available: true)
+[Sate Taichan Sarjana] [Coffee] Sate ASIN (Available: true)
+[Sate Taichan Sarjana] [Coffee] Lontong (Available: true)
+[Sate Taichan Sarjana] [Minuman] Es Teh manis (Available: true)
+[Sate Taichan Sarjana - Cibubur] [Coffee] Espresso (Available: true)
+[Sate Taichan Sarjana] [Makanan Berat] Nasi Padang (Available: true)
+[Sate Taichan Sarjana] [Minuman] Air Mineral (Available: true)
+[Sate Taichan Sarjana] [Coffee] New Item (Available: true)
